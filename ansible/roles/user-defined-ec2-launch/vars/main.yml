@@ -1,0 +1,21 @@
+---
+aws_access_key: "AKIAIBNFTBEXO6CCABJQ"
+aws_secret_key: "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"
+aws_region: "us-east-2"
+mykey: "mykey"
+
+# Subnets
+subnet_id: "subnet-003276a919e938dfd"
+#private_subnet_1_cidr: "172.16.1.0/24"
+main_sg_id: "sg-0c7b50b382d39cd2f"
+
+#############################
+## Used in parts 2 and 3    #
+#############################
+#Ec2 Launch
+ec2_image: "ami-0cd3dfa4e37921605"
+ec2_instance_type: "t2.micro"
+ec2_ansible_Name: "Ansible_Server"
+ec2_apache_Name: "Apache_Server"
+ec2_mysql_Name: "MySql_Server"
+ec2_tag_Environment: "Dev"

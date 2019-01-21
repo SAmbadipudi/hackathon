@@ -1,0 +1,6 @@
+---
+mysql_service_name: mysqld
+mysql_user: wikiuser
+mysql_password: test123
+mysql_db_name: wikidb
+wp_mysql_hostname: 172.16.1.249

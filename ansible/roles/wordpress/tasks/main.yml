@@ -1,0 +1,47 @@
+---
+- name: remove installed packages
+  shell: yum remove httpd-tools -y
+- name: download php packages
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ php_packages }}"
+- name: install httpd
+  yum:
+    name: httpd
+    state: present
+- name: download wordpress
+  get_url:
+    url=https://wordpress.org/latest.tar.gz
+    dest=/tmp/wordpress.tar.gz
+- name: Unarchive a file mediawiki file
+  shell: |
+    cd /tmp
+    tar -zxpvf wordpress.tar.gz -C /var/www/html/
+    chown -R root:root /var/www/html//wordpress
+
+- name: Copy sample config file
+  command: mv /var/www/html//wordpress/wp-config-sample.php /var/www/html/wordpress/wp-config.php creates=/var/www/html/wordpress/wp-config.php
+
+- name: Update WordPress config file
+  lineinfile:
+    dest=/var/www/html/wordpress/wp-config.php
+    regexp="{{ item.regexp }}"
+    line="{{ item.line }}"
+  with_items:
+    - {'regexp': "define\\('DB_NAME', '(.)+'\\);", 'line': "define('DB_NAME', '{{wp_mysql_db}}');"}        
+    - {'regexp': "define\\('DB_USER', '(.)+'\\);", 'line': "define('DB_USER', '{{wp_mysql_user}}');"}        
+    - {'regexp': "define\\('DB_PASSWORD', '(.)+'\\);", 'line': "define('DB_PASSWORD', '{{wp_mysql_password}}');"}
+    - {'regexp': "define\\('DB_HOST', '(.)+'\\);", 'line': "define('DB_HOST', '{{wp_mysql_hostname}}');"}
+
+#- name: Copy nginx configuration for wordpress
+#  template: src=default.conf dest=/etc/nginx/nginx.conf
+#  notify: restart nginx
+#- name: Start service nginx, if not started
+#  service:
+#    name: nginx
+#    state: stopped
+- name: Start service nginx, if not started
+  service:
+    name: httpd
+    state: restarted

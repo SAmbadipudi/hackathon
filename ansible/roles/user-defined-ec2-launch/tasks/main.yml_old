@@ -1,0 +1,84 @@
+---
+- name: Ec2 - Ansible Server - Launch
+  ec2:
+    key_name: "{{mykey}}"
+    instance_type: "{{ec2_instance_type}}"
+    image: "{{ec2_image}}"
+    vpc_subnet_id: "{{ public_subnet_az1_id }}"
+    group_id: "{{ main_sg_id }}"
+    assign_public_ip: True
+    wait: true
+    region: "{{aws_region}}"
+    instance_tags: '{"Name":"{{ec2_ansible_Name}}","Environment":"{{ec2_tag_Environment}}"}'
+    aws_access_key: "{{aws_access_key}}"
+    aws_secret_key: "{{aws_secret_key}}"
+  register: ec2
+- name: See ec2 value
+  debug: var=ec2
+- name: Wait for Ansible Server SSH Service
+  wait_for:
+    host: "{{ item.public_ip }}"
+    port: 22
+    delay: 120
+  with_items: "{{ ec2.instances }}"
+- name: Adding Ansible Server instance IP to host file
+  copy:
+    content: "[ansible]{{'\n'}}{{ item.public_ip }}"
+    dest: /root/hosts
+  with_items: "{{ ec2.instances }}"
+
+- name: Ec2 - Apache One - Launch
+  ec2:
+    key_name: "mykey"
+    instance_type: "{{ec2_instance_type}}"
+    image: "{{ec2_image}}"
+    user_data: "{{ lookup('file', '/root/create.sh') }}"
+    vpc_subnet_id: "{{ private_subnet_az1_id }}"
+    group_id: "{{ main_sg_id }}"
+    assign_public_ip: yes
+    wait: true
+    region: "{{aws_region}}"
+    instance_tags: '{"Name":"{{ec2_apache_Name}}","Environment":"{{ec2_tag_Environment}}"}'
+    aws_access_key: "{{aws_access_key}}"
+    aws_secret_key: "{{aws_secret_key}}"
+  register: ec2
+- name: See ec2 value
+  debug: var=ec2
+- name: Wait for Apache One SSH Service
+  wait_for:
+     timeout: 120
+- name: Adding Apache One instance IP to host file
+  lineinfile:
+    dest: /root/hosts
+    regexp: "^ansibleserver"
+    insertbefore: "^[ansibleserver]"
+    line: "[apache1]{{'\n'}}{{ item.private_ip }}"
+  with_items: "{{ ec2.instances }}"
+
+- name: Ec2 - MySQL - Launch
+  ec2:
+    key_name: "mykey"
+    instance_type: "{{ec2_instance_type}}"
+    image: "{{ec2_image}}"
+    user_data: "{{ lookup('file', '/root/create.sh') }}"
+    vpc_subnet_id: "{{ private_subnet_az1_id }}"
+    group_id: "{{ main_sg_id }}"
+    assign_public_ip: yes
+    wait: true
+    region: "{{aws_region}}"
+    instance_tags: '{"Name":"{{ec2_mysql_Name}}","Environment":"{{ec2_tag_Environment}}"}'
+    aws_access_key: "{{aws_access_key}}"
+    aws_secret_key: "{{aws_secret_key}}"
+  register: ec2
+- name: See ec2 value
+  debug: var=ec2
+- name: Wait for Apache One SSH Service
+  wait_for:
+     timeout: 120
+- name: Adding MySQL instance IP to host file
+  lineinfile:
+    dest: /root/hosts
+    regexp: "^apache1"
+    insertbefore: "^[apache1]{{'\n'}}"
+    line: "[mysql]{{'\n'}}{{ item.private_ip }}"
+  with_items: "{{ ec2.instances }}"

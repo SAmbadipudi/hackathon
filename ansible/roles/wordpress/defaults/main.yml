@@ -1,0 +1,7 @@
+---
+wp_mysql_db: wiki_db
+wp_mysql_user: wiki_user
+wp_mysql_password: test123
+wp_mysql_hostname: redhat
+nginx_port: 80
+server_hostname: 172.16.1.244
