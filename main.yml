@@ -4,7 +4,7 @@
     connection: local
     gather_facts: no
     roles:
-     - user-defined-ec2-launch
+     - ec2-launch
 ####################  End of First Section
 ####################  Second Section (Configure loadbalancer ansible server)
 #  - hosts: all
